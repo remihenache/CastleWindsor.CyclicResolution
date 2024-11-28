@@ -27,12 +27,25 @@ namespace CastleWindsor.CyclicResolution
                 var alreadyResolvedType = context.GetContextualProperty(dependency.TargetType.FullName);
                 if(alreadyResolvedType != null)
                     return alreadyResolvedType;
-                return !_kernel.HasComponent(dependency.TargetType) ? null : _kernel.GetHandler(dependency.TargetType)?.TryResolve(context);
+                if (!dependency.TargetType.IsGenericType)
+                    return TryResolve(context, dependency);
+                
+                context.AddGenericArguments(dependency.TargetType);
+                var resolved = TryResolve(context, dependency);
+                context.CleanGenericArguments();
+                return resolved;
             }
             var alreadyResolvedName = context.GetContextualProperty(dependency.ReferencedComponentName);
             if(alreadyResolvedName != null)
                 return alreadyResolvedName;
             return !_kernel.HasComponent(dependency.ReferencedComponentName) ? null : _kernel.GetHandler(dependency.ReferencedComponentName)?.TryResolve(context);
+        }
+
+        private object? TryResolve(CreationContext context, DependencyModel dependency)
+        {
+            return !_kernel.HasComponent(dependency.TargetType)
+                ? null
+                : _kernel.GetHandler(dependency.TargetType)?.TryResolve(context);
         }
     }
 }
