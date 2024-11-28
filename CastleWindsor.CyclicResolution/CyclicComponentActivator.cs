@@ -2,7 +2,6 @@
 using Castle.MicroKernel;
 using Castle.MicroKernel.ComponentActivator;
 using Castle.MicroKernel.Context;
-using Castle.MicroKernel.Handlers;
 
 namespace CastleWindsor.CyclicResolution
 {
@@ -27,21 +26,21 @@ namespace CastleWindsor.CyclicResolution
         }
         
         
-        protected override object[] CreateConstructorArguments(
+        protected override object?[] CreateConstructorArguments(
             ConstructorCandidate constructor,
             CreationContext context)
         {
             object?[] constructorArguments = base.CreateConstructorArguments(constructor, context);
-            if(constructorArguments == null)
-                return constructorArguments;
-            if (constructorArguments.All(c => c != null))
+            if(constructorArguments == null || constructorArguments.All(c => c != null))
                 return constructorArguments;
             try
             {
                 for (int index = 0; index < constructorArguments.Length; ++index)
                 {
+                    if (constructorArguments[index] != null)
+                        continue;
                     context.AddGenericArguments(constructor.Dependencies[index].TargetType);
-                    constructorArguments[index] ??= TryResolve(constructor, context, index);
+                    constructorArguments[index] = TryResolve(constructor, context, index);
                     context.CleanGenericArguments();
                 }
                 return constructorArguments;
@@ -57,20 +56,6 @@ namespace CastleWindsor.CyclicResolution
         private object? TryResolve(ConstructorCandidate constructor, CreationContext context, int index)
         {
             return !Kernel.HasComponent(constructor.Dependencies[index].TargetType) ? null : Kernel.GetHandler(constructor.Dependencies[index].TargetType)?.TryResolve(context);
-        }
-    }
-    
-    public class GenericImplementationMatchingStrategy : IGenericImplementationMatchingStrategy
-    {
-        public Type[] GetGenericArguments(ComponentModel model, CreationContext context)
-        {
-            var first = model.Services.First();
-            if (first.IsGenericType && !first.IsGenericTypeDefinition)
-            {
-                return first.GetGenericArguments();
-            }
-
-            return context.GetGenericArguments();
         }
     }
 }

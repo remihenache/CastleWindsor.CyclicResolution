@@ -6,7 +6,7 @@ namespace CastleWindsor.CyclicResolution
     
     public static class CastleExtension
     {
-        private const string Genericarguments = "GenericArguments";
+        private const string GenericArguments = "GenericArguments";
 
         public static IWindsorContainer ResolveCyclicDependencies(this IWindsorContainer container)
         {
@@ -18,26 +18,26 @@ namespace CastleWindsor.CyclicResolution
 
         internal static void AddGenericArguments(this CreationContext context, Type genericType)
         {
-            if(context.AdditionalArguments.Contains(Genericarguments))
-                (context.AdditionalArguments[Genericarguments] as Stack<Type>).Push(genericType);
+            if(context.AdditionalArguments.Contains(GenericArguments))
+                (context.AdditionalArguments[GenericArguments] as Stack<Type>)!.Push(genericType);
             else
             {
-                Stack<Type> types = new Stack<Type>();
+                Stack<Type> types = new ();
                 types.Push(genericType);
-                context.AdditionalArguments.Add(Genericarguments, types);
+                context.AdditionalArguments.Add(GenericArguments, types);
             }
         }
         internal static void CleanGenericArguments(this CreationContext context)
         {
-            if (!context.AdditionalArguments.Contains(Genericarguments))
+            if (!context.AdditionalArguments.Contains(GenericArguments))
                 return;
-            (context.AdditionalArguments[Genericarguments] as Stack<Type>).Pop();
+            (context.AdditionalArguments[GenericArguments] as Stack<Type>)!.Pop();
         }
         internal static Type[] GetGenericArguments(this CreationContext context)
         {
-            if (context.HasAdditionalArguments && context.AdditionalArguments.Contains(Genericarguments))
+            if (context.HasAdditionalArguments && context.AdditionalArguments.Contains(GenericArguments))
             {
-                return (context.AdditionalArguments[Genericarguments] as Stack<Type>).Peek().GetGenericArguments();
+                return (context.AdditionalArguments[GenericArguments] as Stack<Type>)!.Peek().GetGenericArguments();
             }
             return Type.EmptyTypes;
         }
