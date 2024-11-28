@@ -8,7 +8,7 @@ public class GenericImplementationMatchingStrategy : IGenericImplementationMatch
 {
     public Type[] GetGenericArguments(ComponentModel model, CreationContext context)
     {
-        var first = model.Services.FirstOrDefault();
+        Type? first = model.Services.FirstOrDefault();
         return first is { IsGenericType: true, IsGenericTypeDefinition: false } ? first.GetGenericArguments() : context.GetGenericArguments();
     }
 }

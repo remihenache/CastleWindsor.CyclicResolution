@@ -15,6 +15,11 @@ namespace CastleWindsor.CyclicResolution
             return container;
         }
 
+        internal static bool TryGetContextualInstance(this CreationContext context, string name, out object? dependency)
+        {
+            dependency = context.GetContextualProperty(name);
+            return dependency != null;
+        }
 
         internal static void AddGenericArguments(this CreationContext context, Type genericType)
         {
