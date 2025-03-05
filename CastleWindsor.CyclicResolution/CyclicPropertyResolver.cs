@@ -22,17 +22,36 @@ namespace CastleWindsor.CyclicResolution
         public object? Resolve(CreationContext context, ISubDependencyResolver contextHandler, 
             ComponentModel model, DependencyModel dependency)
         {
-            if (string.IsNullOrEmpty(dependency.ReferencedComponentName))
-            {
-                var alreadyResolvedType = context.GetContextualProperty(dependency.TargetType.FullName);
-                if(alreadyResolvedType != null)
-                    return alreadyResolvedType;
-                return !_kernel.HasComponent(dependency.TargetType) ? null : _kernel.GetHandler(dependency.TargetType)?.TryResolve(context);
-            }
-            var alreadyResolvedName = context.GetContextualProperty(dependency.ReferencedComponentName);
-            if(alreadyResolvedName != null)
-                return alreadyResolvedName;
-            return !_kernel.HasComponent(dependency.ReferencedComponentName) ? null : _kernel.GetHandler(dependency.ReferencedComponentName)?.TryResolve(context);
+            return string.IsNullOrEmpty(dependency.ReferencedComponentName) ? ResolveType(context, dependency) : ResolveNamedDependency(context, dependency);
+        }
+
+        private object? ResolveType(CreationContext context, DependencyModel dependency)
+        {
+            if(context.TryGetContextualInstance(dependency.TargetType.FullName!, out var instance))
+                return instance;
+            return dependency.TargetType.IsGenericType ? ResolveGenericType(context, dependency) : TryResolve(context, dependency);
+        }
+
+        private object? ResolveNamedDependency(CreationContext context, DependencyModel dependency)
+        {
+            if(context.TryGetContextualInstance(dependency.ReferencedComponentName, out var instance))
+                return instance;
+            return _kernel.HasComponent(dependency.ReferencedComponentName) ? _kernel.GetHandler(dependency.ReferencedComponentName)?.TryResolve(context) : null;
+        }
+
+        private object? ResolveGenericType(CreationContext context, DependencyModel dependency)
+        {
+            context.AddGenericArguments(dependency.TargetType);
+            var resolved = TryResolve(context, dependency);
+            context.CleanGenericArguments();
+            return resolved;
+        }
+
+        private object? TryResolve(CreationContext context, DependencyModel dependency)
+        {
+            return _kernel.HasComponent(dependency.TargetType)
+                ? _kernel.GetHandler(dependency.TargetType)?.TryResolve(context)
+                : null;
         }
     }
 }

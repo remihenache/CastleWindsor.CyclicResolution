@@ -24,6 +24,6 @@ namespace CastleWindsor.CyclicResolution
             }
             return instance;
         }
-
+        
     }
 }

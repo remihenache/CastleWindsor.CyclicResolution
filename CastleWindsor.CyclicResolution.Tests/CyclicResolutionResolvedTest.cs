@@ -14,7 +14,47 @@ namespace CastleWindsor.CyclicResolution.Tests
             _container = new WindsorContainer();
             _container.ResolveCyclicDependencies();
         }
-        
+
+        [Fact]
+        public void SimpleGenericCyclicDependency()
+        {
+            _container.Register(Component.For<ISimpleService>().ImplementedBy<SimpleService>());
+            _container.Register(Component.For<IComplexService>().ImplementedBy<ComplexService>());
+            _container.Register(Component.For(typeof(IGenericService<>)).ImplementedBy(typeof(GenericService<>)));
+            var complexService = _container.Resolve<IGenericService<ISimpleService>>().Service;
+            Assert.NotNull(complexService);
+            Assert.NotNull(complexService.ComplexService);
+        }
+
+        [Fact]
+        public void GenericWithConstructorCyclicDependency()
+        {
+            _container.Register(Component.For<ISimpleService>().ImplementedBy<SimpleService>());
+            _container.Register(Component.For<IComplexService>().ImplementedBy<ComplexService>());
+            _container.Register(Component.For(typeof(IGenericService<>)).ImplementedBy(typeof(GenericService<>)));
+            _container.Register(Component.For(typeof(ConstructorGenericService<>)).ImplementedBy(typeof(ConstructorGenericService<>)));
+            var complexService = _container.Resolve<ConstructorGenericService<ISimpleService>>().Service;
+            Assert.NotNull(complexService);
+            Assert.NotNull(complexService.Service);
+            Assert.NotNull(complexService.Service.ComplexService);
+        }
+        [Fact]
+        public void GenericWithCustomCyclicDependency()
+        {
+            _container.Register(Component.For<ISimpleService>().ImplementedBy<SimpleService>());
+            _container.Register(Component.For<IComplexService>().ImplementedBy<ComplexService>());
+            _container.Register(Component.For(typeof(IGenericService<>)).ImplementedBy(typeof(GenericService<>), new GenericImplementationMatchingStrategy()));
+            _container.Register(Component.For<AGenericService>().ImplementedBy<AGenericService>());
+            var complexService = _container.Resolve<AGenericService>();
+            Assert.NotNull(complexService);
+            Assert.NotNull(complexService.Service);
+            Assert.NotNull(complexService.Service.ComplexService);
+            Assert.NotNull(complexService.GenericService);
+            Assert.NotNull(complexService.GenericService.Service);
+            Assert.Equal(complexService.Service.ComplexService, complexService.GenericService.Service);
+            Assert.Equal(complexService.Service, complexService.GenericService.Service.SimpleService);
+        }
+
         [Fact]
         public void OpenGenericCyclicDependency()
         {
@@ -23,7 +63,7 @@ namespace CastleWindsor.CyclicResolution.Tests
             _container.Register(Component.For<IComplexService>().ImplementedBy<ComplexService>());
             var complexService = _container.Resolve<IGenericService<ISimpleService>>();
             Assert.NotNull(complexService);
-            Assert.NotNull(complexService.Value);
+            Assert.NotNull(complexService.Service);
         }
         [Fact]
         public void SimpleCyclicDependency()
