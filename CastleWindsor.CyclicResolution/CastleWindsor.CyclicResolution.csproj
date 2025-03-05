@@ -1,12 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Title>CastleWindsor.CyclicResolution</Title>
         <Authors>R. Henache</Authors>
+        <Description>A simple implementation of castle windsor resolver to allow cyclic dependencies to be resolved</Description>
+        <PackageProjectUrl>https://github.com/remihenache/CastleWindsor.CyclicResolution</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/remihenache/CastleWindsor.CyclicResolution/blob/main/LICENSE</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/remihenache/CastleWindsor.CyclicResolution/tree/main</RepositoryUrl>
+        <TargetFramework>net8.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>

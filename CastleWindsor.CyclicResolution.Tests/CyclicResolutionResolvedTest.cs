@@ -16,6 +16,16 @@ namespace CastleWindsor.CyclicResolution.Tests
         }
         
         [Fact]
+        public void OpenGenericCyclicDependency()
+        {
+            _container.Register(Component.For(typeof(IGenericService<>)).ImplementedBy(typeof(GenericService<>)));
+            _container.Register(Component.For<ISimpleService>().ImplementedBy<SimpleService>());
+            _container.Register(Component.For<IComplexService>().ImplementedBy<ComplexService>());
+            var complexService = _container.Resolve<IGenericService<ISimpleService>>();
+            Assert.NotNull(complexService);
+            Assert.NotNull(complexService.Value);
+        }
+        [Fact]
         public void SimpleCyclicDependency()
         {
             _container.Register(Component.For<ISimpleService>().ImplementedBy<SimpleService>());
